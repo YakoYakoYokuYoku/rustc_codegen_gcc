@@ -119,14 +119,18 @@ pub fn compile_codegen_unit(tcx: TyCtxt<'_>, cgu_name: Symbol, target_info: Lock
         // NOTE: Rust relies on LLVM doing wrapping on overflow.
         context.add_command_line_option("-fwrapv");
 
-        if tcx.sess.relocation_model() == rustc_target::spec::RelocModel::Static {
+        if tcx.sess.relocation_model() == rustc_target::spec::RelocModel::Static && tcx.sess.target.arch != "avr" {
             context.add_command_line_option("-mcmodel=kernel");
             context.add_command_line_option("-fno-pie");
         }
 
         let target_cpu = gcc_util::target_cpu(tcx.sess);
         if target_cpu != "generic" {
-            context.add_command_line_option(&format!("-march={}", target_cpu));
+            if tcx.sess.target.arch == "avr" {
+                context.set_mode_mcu(target_cpu);
+            } else {
+                context.set_mode_cpu(target_cpu);
+            }
         }
 
         if tcx.sess.opts.unstable_opts.function_sections.unwrap_or(tcx.sess.target.function_sections) {

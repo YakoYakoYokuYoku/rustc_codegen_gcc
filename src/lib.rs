@@ -186,7 +186,11 @@ impl CodegenBackend for GccCodegenBackend {
             // Get the second TargetInfo with the correct CPU features by setting the arch.
             let context = Context::default();
             if target_cpu != "generic" {
-                context.add_command_line_option(&format!("-march={}", target_cpu));
+                if sess.target.arch == "avr" {
+                    context.set_mode_mcu(target_cpu);
+                } else {
+                    context.set_mode_cpu(target_cpu);
+                }
             }
 
             **self.target_info.info.lock().expect("lock") = context.get_target_info();
