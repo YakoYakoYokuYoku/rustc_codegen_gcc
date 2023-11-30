@@ -1110,7 +1110,8 @@ impl<'a, 'gcc, 'tcx> BuilderMethods<'a, 'tcx> for Builder<'a, 'gcc, 'tcx> {
         let ptr = self.pointercast(ptr, self.type_i8p());
         let memset = self.context.get_builtin_function("memset");
         // TODO(antoyo): handle align and is_volatile.
-        let fill_byte = self.context.new_cast(None, fill_byte, self.i32_type);
+        let diff_type = if self.sess().target.arch == "avr" { self.i16_type } else { self.i32_type };
+        let fill_byte = self.context.new_cast(None, fill_byte, diff_type);
         let size = self.intcast(size, self.type_size_t(), false);
         self.block.add_eval(None, self.context.new_call(None, memset, &[ptr, fill_byte, size]));
     }
