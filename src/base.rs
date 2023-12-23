@@ -124,6 +124,10 @@ pub fn compile_codegen_unit(tcx: TyCtxt<'_>, cgu_name: Symbol, target_info: Lock
             context.add_command_line_option("-fno-pie");
         }
 
+        if let Ok(gcc_path) = env::var("GCC_PATH").as_deref() {
+            context.set_program_name(format!("{}/libgccjit.so", gcc_path));
+        }
+
         let target_cpu = gcc_util::target_cpu(tcx.sess);
         if target_cpu != "generic" {
             if tcx.sess.target.arch == "avr" {
